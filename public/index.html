@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sistema de Gestão e Vendas - Itanhaém</title>
+  <link rel="stylesheet" href="/estilo.css">
+</head>
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="topo">
+    <h1><span aria-hidden="true">🛒</span> Sistema de Gestão e Vendas - Itanhaém <small>v1.0</small></h1>
+    <div class="acess" role="group" aria-label="Opções de acessibilidade">
+      <button type="button" id="btnContraste" aria-pressed="false">◐ Alto contraste</button>
+      <button type="button" id="btnFonteMenos" aria-label="Diminuir tamanho do texto">A−</button>
+      <button type="button" id="btnFonteMais" aria-label="Aumentar tamanho do texto">A+</button>
+    </div>
+  </header>
+
+  <!-- Região anunciada por leitores de tela (alertas acessíveis) -->
+  <div id="alerta" class="alerta" role="status" aria-live="polite" hidden></div>
+
+  <main id="conteudo" tabindex="-1">
+    <!-- TELA 1: LOGIN -->
+    <section id="telaLogin" class="cartao estreito" aria-labelledby="tituloLogin">
+      <h2 id="tituloLogin">Autenticação do operador</h2>
+      <form id="formLogin" novalidate>
+        <label for="email">Usuário / E-mail</label>
+        <input id="email" type="email" autocomplete="username" required value="operador@comercio.com">
+        <label for="senha">Senha</label>
+        <input id="senha" type="password" autocomplete="current-password" required>
+        <p class="dica">Ambiente de demonstração: senha <code>senha123</code></p>
+        <button type="submit" class="primario">Entrar no sistema</button>
+      </form>
+    </section>
+
+    <!-- TELA 2: VENDAS E ESTOQUE -->
+    <section id="telaVendas" class="grade" hidden aria-labelledby="tituloVendas">
+      <div class="cartao">
+        <div class="linha-titulo">
+          <h2 id="tituloVendas">Vendas e estoque</h2>
+          <p class="status">Operador: <strong id="nomeOperador"></strong> · <span class="online">● Online</span></p>
+        </div>
+        <div class="tabela-wrap">
+          <table>
+            <caption class="sr">Produtos disponíveis. Use os botões + e − para ajustar a quantidade.</caption>
+            <thead><tr><th scope="col">Cód.</th><th scope="col">Produto</th><th scope="col">Preço</th><th scope="col">Estoque</th><th scope="col">Quantidade</th></tr></thead>
+            <tbody id="listaProdutos"></tbody>
+          </table>
+        </div>
+      </div>
+      <aside class="cartao" aria-labelledby="tituloCarrinho">
+        <h2 id="tituloCarrinho">Resumo do carrinho</h2>
+        <ul id="carrinho" class="carrinho"></ul>
+        <p class="total">Total da venda: <strong id="total">R$ 0,00</strong></p>
+        <button type="button" id="btnFinalizar" class="primario" disabled>Finalizar venda e abater estoque</button>
+        <button type="button" id="btnRelatorio" class="secundario">Ver relatório do dia</button>
+        <button type="button" id="btnSair" class="link">Sair</button>
+      </aside>
+    </section>
+
+    <!-- TELA 3: CONFIRMAÇÃO + RELATÓRIO -->
+    <section id="telaRelatorio" class="cartao estreito" hidden aria-labelledby="tituloRelatorio">
+      <div id="confirmacao" class="confirmacao" hidden>
+        <p><span aria-hidden="true">✔</span> <strong id="textoConfirmacao"></strong></p>
+        <p>Status do estoque: abatido automaticamente no banco de dados.</p>
+      </div>
+      <h2 id="tituloRelatorio">Relatório resumido de vendas do dia</h2>
+      <dl class="relatorio">
+        <div><dt>Data</dt><dd id="relData"></dd></div>
+        <div><dt>Total de vendas</dt><dd id="relTransacoes"></dd></div>
+        <div><dt>Faturamento total</dt><dd id="relFaturamento"></dd></div>
+        <div><dt>Item mais vendido</dt><dd id="relMaisVendido"></dd></div>
+      </dl>
+      <div class="acoes">
+        <button type="button" id="btnNovaVenda" class="primario">Iniciar nova venda</button>
+        <button type="button" id="btnImprimir" class="secundario">Imprimir / gerar comprovante</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape">Projeto de Bloco · Análise e Desenvolvimento de Sistemas · Alinhado ao ODS 8 – Trabalho decente e crescimento econômico</footer>
+  <script src="/app.js"></script>
+</body>
+</html>
