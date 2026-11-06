@@ -48,6 +48,37 @@ describe('Vendas e estoque (RF01 / RF02)', () => {
   });
 });
 
+describe('Finalização do caixa (v1.1 - feedback da validação)', () => {
+  test('calcula o troco no pagamento em dinheiro', () => {
+    const db = novoBanco();
+    const v = registrarVenda(db, 1, [{ produtoId: 1, quantidade: 2 }, { produtoId: 3, quantidade: 1 }],
+      { forma: 'dinheiro', valorRecebidoCentavos: 10000 });
+    assert.equal(v.totalCentavos, 5600);
+    assert.equal(v.trocoCentavos, 4400);
+  });
+  test('recusa valor recebido menor que o total, sem baixar estoque', () => {
+    const db = novoBanco();
+    const antes = listarProdutos(db)[0].estoque;
+    assert.throws(() => registrarVenda(db, 1, [{ produtoId: 1, quantidade: 1 }],
+      { forma: 'dinheiro', valorRecebidoCentavos: 1000 }), /menor que o total/);
+    assert.equal(listarProdutos(db)[0].estoque, antes);
+  });
+  test('aceita Pix/cartão sem troco e rejeita forma inválida', () => {
+    const db = novoBanco();
+    const v = registrarVenda(db, 1, [{ produtoId: 2, quantidade: 1 }], { forma: 'pix' });
+    assert.equal(v.trocoCentavos, 0);
+    assert.equal(v.valorRecebidoCentavos, null);
+    assert.throws(() => registrarVenda(db, 1, [{ produtoId: 2, quantidade: 1 }], { forma: 'cheque' }), ErroVenda);
+  });
+  test('relatório separa o faturamento por forma de pagamento', () => {
+    const db = novoBanco();
+    registrarVenda(db, 1, [{ produtoId: 1, quantidade: 1 }], { forma: 'pix' });
+    registrarVenda(db, 1, [{ produtoId: 2, quantidade: 1 }], { forma: 'dinheiro', valorRecebidoCentavos: 1000 });
+    const formas = Object.fromEntries(relatorioDoDia(db).porFormaPagamento.map((f) => [f.forma, f.totalCentavos]));
+    assert.deepEqual(formas, { pix: 2500, dinheiro: 850 });
+  });
+});
+
 describe('Relatório diário (RF04)', () => {
   test('consolida transações, faturamento e item mais vendido', () => {
     const db = novoBanco();

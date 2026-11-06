@@ -15,6 +15,18 @@ MVP criado a partir de uma investigação de campo com um comércio varejista lo
 | RNF02 | Mensagens de erro tratadas, sem expor detalhes internos |
 | RNF03 | Resposta da venda abaixo de 1,5 s (verificado em teste) |
 
+## Ajustes após a validação com a comunidade (v1.1)
+
+Na rodada de validação com o comércio parceiro, o pedido principal foi tornar a **finalização do caixa** mais prática. Ajustes feitos:
+
+- Escolha da forma de pagamento (dinheiro, Pix, débito, crédito)
+- Campo "valor recebido" com cálculo do troco em tempo real; o botão só libera quando o valor cobre o total
+- Troco recalculado e validado também no servidor, dentro da mesma transação da venda
+- Atalhos de teclado: **F2** finaliza a venda, **Esc** limpa o carrinho
+- Proteção contra venda duplicada por clique duplo
+- Relatório do dia separado por forma de pagamento
+- Migração automática do banco: novas colunas `forma_pagamento`, `valor_recebido_centavos` e `troco_centavos` na tabela `vendas`
+
 ## Acessibilidade
 
 - Contraste mínimo de 4,5:1 (WCAG 2.1 AA) no tema padrão

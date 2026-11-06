@@ -60,6 +60,17 @@ th { color: var(--suave); font-size: .85rem; text-transform: uppercase; }
 .carrinho li { display: flex; justify-content: space-between; padding: .4rem 0; border-bottom: 1px dashed var(--borda); }
 .carrinho .vazio { color: var(--suave); border: none; }
 .total { font-size: 1.15rem; margin-top: 1rem; }
+.pagamento { border: 1px solid var(--borda); border-radius: 8px; padding: .5rem 1rem 1rem; margin: 0; }
+.pagamento legend { font-weight: 700; padding: 0 .3rem; }
+.formas { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; }
+.formas label { margin: 0; font-weight: 600; display: flex; align-items: center; gap: .4rem; border: 2px solid var(--borda); border-radius: 6px; padding: .45rem .6rem; cursor: pointer; }
+.formas label:has(input:checked) { border-color: var(--primaria); color: var(--primaria); }
+.formas input { width: auto; accent-color: var(--primaria); }
+.troco { font-size: 1.1rem; font-weight: 700; margin: .5rem 0 0; }
+.troco.falta { color: var(--erro-texto); }
+kbd { font: inherit; font-size: .8em; border: 1px solid currentColor; border-radius: 4px; padding: 0 .3rem; }
+.atalhos { color: var(--suave); font-size: .85rem; text-align: center; margin: .4rem 0 0; }
+.subtitulo { font-size: 1rem; margin: 1.25rem 0 .25rem; }
 
 .alerta { max-width: 1100px; margin: 1rem auto 0; padding: .9rem 1rem; border-radius: 8px; font-weight: 600; border: 2px solid; }
 .alerta.ok { background: var(--ok-fundo); color: var(--ok-texto); }

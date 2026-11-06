@@ -10,7 +10,7 @@
   <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
   <header class="topo">
-    <h1><span aria-hidden="true">🛒</span> Sistema de Gestão e Vendas - Itanhaém <small>v1.0</small></h1>
+    <h1><span aria-hidden="true">🛒</span> Sistema de Gestão e Vendas - Itanhaém <small>v1.1</small></h1>
     <div class="acess" role="group" aria-label="Opções de acessibilidade">
       <button type="button" id="btnContraste" aria-pressed="false">◐ Alto contraste</button>
       <button type="button" id="btnFonteMenos" aria-label="Diminuir tamanho do texto">A−</button>
@@ -54,7 +54,24 @@
         <h2 id="tituloCarrinho">Resumo do carrinho</h2>
         <ul id="carrinho" class="carrinho"></ul>
         <p class="total">Total da venda: <strong id="total">R$ 0,00</strong></p>
-        <button type="button" id="btnFinalizar" class="primario" disabled>Finalizar venda e abater estoque</button>
+
+        <fieldset class="pagamento">
+          <legend>Forma de pagamento</legend>
+          <div class="formas">
+            <label><input type="radio" name="forma" value="dinheiro" checked> Dinheiro</label>
+            <label><input type="radio" name="forma" value="pix"> Pix</label>
+            <label><input type="radio" name="forma" value="debito"> Débito</label>
+            <label><input type="radio" name="forma" value="credito"> Crédito</label>
+          </div>
+          <div id="blocoDinheiro">
+            <label for="valorRecebido">Valor recebido (R$)</label>
+            <input id="valorRecebido" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off" aria-describedby="troco">
+            <p class="troco" id="troco" aria-live="polite">Troco: R$ 0,00</p>
+          </div>
+        </fieldset>
+
+        <button type="button" id="btnFinalizar" class="primario" disabled aria-keyshortcuts="F2">Finalizar venda <kbd>F2</kbd></button>
+        <p class="atalhos">Atalhos: <kbd>F2</kbd> finaliza · <kbd>Esc</kbd> limpa o carrinho</p>
         <button type="button" id="btnRelatorio" class="secundario">Ver relatório do dia</button>
         <button type="button" id="btnSair" class="link">Sair</button>
       </aside>
@@ -64,6 +81,7 @@
     <section id="telaRelatorio" class="cartao estreito" hidden aria-labelledby="tituloRelatorio">
       <div id="confirmacao" class="confirmacao" hidden>
         <p><span aria-hidden="true">✔</span> <strong id="textoConfirmacao"></strong></p>
+        <p id="textoPagamento"></p>
         <p>Status do estoque: abatido automaticamente no banco de dados.</p>
       </div>
       <h2 id="tituloRelatorio">Relatório resumido de vendas do dia</h2>
@@ -73,6 +91,8 @@
         <div><dt>Faturamento total</dt><dd id="relFaturamento"></dd></div>
         <div><dt>Item mais vendido</dt><dd id="relMaisVendido"></dd></div>
       </dl>
+      <h3 class="subtitulo">Por forma de pagamento</h3>
+      <ul id="relFormas" class="carrinho"></ul>
       <div class="acoes">
         <button type="button" id="btnNovaVenda" class="primario">Iniciar nova venda</button>
         <button type="button" id="btnImprimir" class="secundario">Imprimir / gerar comprovante</button>

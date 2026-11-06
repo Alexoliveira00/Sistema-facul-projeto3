@@ -105,18 +105,64 @@ function desenharCarrinho() {
   $('carrinho').innerHTML = itens.length
     ? itens.map(({ p, qtd }) => `<li><span>${qtd}x ${p.nome}</span><span>${real(p.preco_centavos * qtd)}</span></li>`).join('')
     : '<li class="vazio">Nenhum item adicionado.</li>';
-  $('total').textContent = real(itens.reduce((s, { p, qtd }) => s + p.preco_centavos * qtd, 0));
-  $('btnFinalizar').disabled = itens.length === 0;
+  $('total').textContent = real(totalCarrinho());
+  atualizarPagamento();
 }
+
+// ---------- Finalização do caixa (v1.1 - feedback da validação) ----------
+const NOMES_FORMA = { dinheiro: 'Dinheiro', pix: 'Pix', debito: 'Cartão de débito', credito: 'Cartão de crédito' };
+const totalCarrinho = () => itensCarrinho().reduce((s, { p, qtd }) => s + p.preco_centavos * qtd, 0);
+const formaSelecionada = () => document.querySelector('input[name="forma"]:checked').value;
+function lerCentavos(texto) {
+  const limpo = String(texto).replace(/[^\d,.]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.');
+  return limpo ? Math.round(Number(limpo) * 100) : null;
+}
+function atualizarPagamento() {
+  const total = totalCarrinho();
+  const dinheiro = formaSelecionada() === 'dinheiro';
+  $('blocoDinheiro').hidden = !dinheiro;
+  let podeFinalizar = total > 0;
+  if (dinheiro) {
+    const recebido = lerCentavos($('valorRecebido').value);
+    const troco = $('troco');
+    if (recebido == null) { troco.textContent = 'Troco: R$ 0,00 (valor exato)'; troco.classList.remove('falta'); }
+    else if (recebido < total) { troco.textContent = `Faltam ${real(total - recebido)}`; troco.classList.add('falta'); podeFinalizar = false; }
+    else { troco.textContent = `Troco: ${real(recebido - total)}`; troco.classList.remove('falta'); }
+  }
+  $('btnFinalizar').disabled = !podeFinalizar;
+}
+document.querySelectorAll('input[name="forma"]').forEach((r) => (r.onchange = atualizarPagamento));
+$('valorRecebido').oninput = atualizarPagamento;
+function limparCarrinho() {
+  produtos.forEach((p) => (quantidades[p.id] = 0));
+  $('valorRecebido').value = '';
+  document.querySelector('input[name="forma"][value="dinheiro"]').checked = true;
+  desenharProdutos(); desenharCarrinho();
+}
+// Atalhos de teclado do caixa: F2 finaliza, Esc limpa o carrinho
+document.addEventListener('keydown', (e) => {
+  if ($('telaVendas').hidden) return;
+  if (e.key === 'F2') { e.preventDefault(); if (!$('btnFinalizar').disabled) $('btnFinalizar').click(); }
+  if (e.key === 'Escape' && totalCarrinho() > 0) { limparCarrinho(); avisar('Carrinho limpo.', 'ok'); }
+});
+
 $('btnFinalizar').onclick = async () => {
+  if ($('btnFinalizar').disabled) return;
+  $('btnFinalizar').disabled = true; // evita venda duplicada por clique duplo
   try {
     const itens = itensCarrinho().map(({ p, qtd }) => ({ produtoId: p.id, quantidade: qtd }));
-    const { vendaId, totalCentavos } = await api('/api/vendas', { method: 'POST', body: JSON.stringify({ itens }) });
+    const forma = formaSelecionada();
+    const pagamento = { forma, valorRecebidoCentavos: forma === 'dinheiro' ? lerCentavos($('valorRecebido').value) : null };
+    const v = await api('/api/vendas', { method: 'POST', body: JSON.stringify({ itens, pagamento }) });
+    const { vendaId, totalCentavos } = v;
     $('textoConfirmacao').textContent = `Venda nº ${vendaId} concluída com sucesso! Total: ${real(totalCentavos)}`;
+    $('textoPagamento').textContent = v.formaPagamento === 'dinheiro'
+      ? `Pagamento: Dinheiro · Recebido ${real(v.valorRecebidoCentavos)} · Troco ${real(v.trocoCentavos)}`
+      : `Pagamento: ${NOMES_FORMA[v.formaPagamento]}`;
     $('confirmacao').hidden = false;
     avisar(`Venda nº ${vendaId} registrada. Estoque atualizado.`, 'ok');
     await abrirRelatorio(true);
-  } catch (err) { avisar(err.message, 'erro'); }
+  } catch (err) { avisar(err.message, 'erro'); atualizarPagamento(); }
 };
 $('btnRelatorio').onclick = () => abrirRelatorio(false);
 
@@ -128,9 +174,16 @@ async function abrirRelatorio(aposVenda) {
   $('relTransacoes').textContent = `${r.transacoes} ${r.transacoes === 1 ? 'transação' : 'transações'}`;
   $('relFaturamento').textContent = real(r.faturamentoCentavos);
   $('relMaisVendido').textContent = r.maisVendido ? `${r.maisVendido.nome} (${r.maisVendido.quantidade} un)` : '—';
+  $('relFormas').innerHTML = r.porFormaPagamento.length
+    ? r.porFormaPagamento.map((f) => `<li><span>${NOMES_FORMA[f.forma]} (${f.transacoes})</span><span>${real(f.totalCentavos)}</span></li>`).join('')
+    : '<li class="vazio">Nenhuma venda hoje.</li>';
   mostrar('telaRelatorio');
 }
-$('btnNovaVenda').onclick = () => { $('alerta').hidden = true; abrirVendas(); };
+$('btnNovaVenda').onclick = () => {
+  $('alerta').hidden = true; $('valorRecebido').value = '';
+  document.querySelector('input[name="forma"][value="dinheiro"]').checked = true;
+  abrirVendas();
+};
 $('btnImprimir').onclick = () => window.print();
 
 // ---------- Início ----------

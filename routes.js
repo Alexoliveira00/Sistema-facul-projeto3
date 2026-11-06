@@ -58,8 +58,8 @@ function criarRotas(db) {
 
         if (req.method === 'GET' && url === '/api/produtos') return json(res, 200, listarProdutos(db));
         if (req.method === 'POST' && url === '/api/vendas') {
-          const { itens } = await lerCorpo(req);
-          return json(res, 201, registrarVenda(db, usuario.id, itens));
+          const { itens, pagamento } = await lerCorpo(req);
+          return json(res, 201, registrarVenda(db, usuario.id, itens, pagamento));
         }
         if (req.method === 'GET' && url === '/api/relatorio') return json(res, 200, relatorioDoDia(db));
         if (req.method === 'POST' && url === '/api/logout') {

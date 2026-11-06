@@ -1,6 +1,6 @@
 {
   "name": "sistema-facul-projeto3",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "MVP de gestão de vendas e estoque para comércio local de Itanhaém/SP",
   "main": "index.js",
   "scripts": {
