@@ -96,6 +96,10 @@ describe('API HTTP (integração)', () => {
     const servidor = criarServidor(novoBanco()).listen(0);
     const base = `http://localhost:${servidor.address().port}`;
     try {
+      const saude = await fetch(`${base}/api/saude`);
+      assert.equal(saude.status, 200);
+      assert.equal((await saude.json()).banco, 'ok');
+
       const negado = await fetch(`${base}/api/produtos`);
       assert.equal(negado.status, 401);
 

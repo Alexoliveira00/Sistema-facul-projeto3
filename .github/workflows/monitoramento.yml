@@ -1,0 +1,34 @@
+name: Monitoramento (uptime)
+
+# Verifica a cada 30 minutos se o MVP em produção está no ar e com o banco respondendo.
+# Se a verificação falhar, o job fica vermelho (DOWN) e o GitHub envia e-mail ao dono do repositório.
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      URL_SAUDE: https://caixa-facil-l2fh.onrender.com/api/saude
+    steps:
+      - name: Checar /api/saude
+        run: |
+          inicio=$(date +%s)
+          # até 3 tentativas: o plano gratuito pode levar ~1 min para acordar
+          for tentativa in 1 2 3; do
+            codigo=$(curl -s -o resposta.json -w "%{http_code}" --max-time 90 "$URL_SAUDE" || echo 000)
+            if [ "$codigo" = "200" ] && grep -q '"status":"ok"' resposta.json && grep -q '"banco":"ok"' resposta.json; then
+              tempo=$(( $(date +%s) - inicio ))
+              echo "### ✅ UP" >> "$GITHUB_STEP_SUMMARY"
+              echo "HTTP $codigo em ${tempo}s (tentativa $tentativa) — \`$(cat resposta.json)\`" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "Tentativa $tentativa falhou (HTTP $codigo). Aguardando 20s..."
+            sleep 20
+          done
+          echo "### ❌ DOWN" >> "$GITHUB_STEP_SUMMARY"
+          echo "Último HTTP: $codigo — resposta: \`$(cat resposta.json 2>/dev/null)\`" >> "$GITHUB_STEP_SUMMARY"
+          exit 1

@@ -5,6 +5,7 @@ const crypto = require('node:crypto');
 const { autenticar, listarProdutos, registrarVenda, relatorioDoDia, ErroVenda } = require('./database');
 
 const PUBLICO = path.join(__dirname, 'public');
+const { version: VERSAO } = require('./package.json');
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8' };
 
 function criarRotas(db) {
@@ -42,6 +43,16 @@ function criarRotas(db) {
   return async function rotear(req, res) {
     try {
       const url = req.url.split('?')[0];
+
+      // Health check público usado pelo Render e pelo monitor do GitHub Actions
+      if (req.method === 'GET' && url === '/api/saude') {
+        try {
+          db.prepare('SELECT 1').get();
+          return json(res, 200, { status: 'ok', banco: 'ok', versao: VERSAO, uptimeSegundos: Math.round(process.uptime()) });
+        } catch {
+          return json(res, 503, { status: 'erro', banco: 'indisponivel', versao: VERSAO });
+        }
+      }
 
       if (req.method === 'POST' && url === '/api/login') {
         const { email, senha } = await lerCorpo(req);
